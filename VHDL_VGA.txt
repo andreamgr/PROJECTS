@@ -1,0 +1,133 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.std_logic_unsigned.all;
+use IEEE.std_logic_arith.all;
+use IEEE.NUMERIC_STD.ALL;
+
+entity VGA is
+	port ( clk: IN STD_LOGIC;
+			reset: IN STD_LOGIC;
+			Hsync: OUT STD_LOGIC;
+			Vsync: OUT STD_LOGIC;
+			RGB : OUT  STD_LOGIC_VECTOR (2 downto 0);
+			s : in std_logic_vector (2 downto 0)
+			);
+end VGA;
+
+architecture Behavioral of VGA is
+	signal Hcount, Vcount: STD_LOGIC_VECTOR(9 DOWNTO 0);
+	signal CTR: integer range 0 to 1;
+	signal clk1: STD_LOGIC;
+	signal pant : std_logic := '0';
+	
+begin
+--------Divisor de frecuencia
+divisor_reloj:	process (clk)
+	begin 
+	if (clk ='1' and clk'event) then
+		if (CTR = 1) then 
+			clk1 <= '1';
+			CTR <= 0;
+			else
+				clk1 <= '0';
+				CTR <= CTR + 1;
+				end if;
+			end if;
+	end process;
+	
+-----------Contador de renglones
+H_count : process (clk1, reset)
+	begin 
+		if (reset = '1') then 
+			Hcount <= (others => '0');
+		elsif (clk1'event and clk1 = '1') then 
+				if (Hcount = "1100011111") then -- Hcount = 799
+					Hcount <= "0000000000";
+					else
+					Hcount <= Hcount +1;
+				end if;
+		end if;
+	end process ;
+	
+--------------Contador de columnas 
+V_count : process (clk1, reset)
+	begin 
+		if (reset = '1') then 
+			Vcount <= (others => '0');
+		elsif (clk1'event and clk1 = '1') then 
+				if (Hcount = "1100011111") then-- Hcount = 799
+					if (Vcount = "1000001100") then -- Vcount = 524
+						Vcount <= (others => '0');
+					else
+						Vcount <= Vcount + 1;
+				end if;
+			end if;
+		end if;
+	end process ; 
+	
+-----If con Hcount para la sincronizacion 
+H_sync: process (clk1, reset)
+	begin 
+		if (reset = '1') then 
+			Hsync <= '0';
+		else
+			if (clk1'event and clk1 = '1') then
+				if ((Hcount <= "1010001111") OR (Hcount > "1011101111")) then
+					Hsync <= '1'; --Hcount = 639 + 16 = 655, + 96 = 751
+				else
+					Hsync <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+		
+------If con Vcount para la sincronizacion
+V_sync: process (clk1, reset)
+	begin 
+		if (reset = '1') then 
+			Vsync <= '0';
+		elsif (clk1'event and clk1 = '1') then
+			if ((Vcount <= "111101001") OR (Vcount > "111101100") ) then
+					Vsync <= '1'; -- Vcount = 479 + 10 = 489, 489 + 2 = 492
+				else 
+					Vsync <= '0';
+			end if;
+		end if;
+	end process;
+	
+--------Declarar la zona permitida  
+pantalla:process(clk1, reset)
+begin
+	if(reset= '1')then
+		pant <= '0';
+	elsif(clk1'event and clk1 = '1')then
+		if(Hcount <= "1001111111" and Vcount <= "111011111")then --- Hcount es 639 y Vcount 479
+			pant <= '1';
+		else
+			pant <= '0';
+		end if;
+	end if;
+end process;
+
+-------Colores 
+colores:process(clk1, reset, pant)
+begin
+	if(reset = '1')then
+		RGB <= "000";
+	elsif(clk1'event and clk1 = '1')then
+		if(pant = '1')then
+			if((Hcount <= 640 ) AND (Vcount <= 480))then
+				RGB <= s(2)&s(1)&s(0);
+			else
+				RGB <= "000";
+			end if;
+		else
+			RGB <= "000";
+		end if;
+	end if;
+end process;
+
+
+ 
+end Behavioral;
+
