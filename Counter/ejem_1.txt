@@ -1,0 +1,29 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+entity ejemplo1 is
+    generic ( WIDTH : integer := 32
+	      WIDTH0 : integer := 3);
+
+    Port ( A : in  std_logic_vector (WIDTH-1 downto 0);
+           B : in  std_logic_vector (WIDTH-1 downto 0);
+           sel : in  std_logic_vector (WIDTH0-1 downto 0);
+           sal : out  std_logic_vector (WIDTH-1 downto 0));
+end ejemplo1;
+
+architecture Behavioral of ejemplo1 is
+
+begin	
+	process (sel, a, b)
+	case sel is 
+		when '000'  => sal <= A + B;
+		when '001'  => sal <= A - B;
+		when '010'  => sal <= NOT A;
+		when '011'  => sal <= A AND B;
+		when '100'  => sal <= A OR B;
+		when others => null;
+	end case;
+	end process;		
+end Behavioral;
+

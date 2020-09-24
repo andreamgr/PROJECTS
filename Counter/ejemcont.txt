@@ -1,0 +1,190 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+
+entity Practica2 is
+    Port ( A0 : in  STD_LOGIC;
+           B0 : in  STD_LOGIC;
+			  A1 : in  STD_LOGIC;
+           B1 : in  STD_LOGIC;
+			  A2 : in  STD_LOGIC;
+           B2 : in  STD_LOGIC;
+           S0 : inout  STD_LOGIC;
+			  S1 : inout  STD_LOGIC;
+				S2 : inout  STD_LOGIC;
+			  Ci1 : inout STD_LOGIC;
+			  Ci2 : inout STD_LOGIC;
+			  LEDs0: out STD_LOGIC;
+			  LEDs1 : out STD_Logic;
+			  LEDs2 : out STD_LOgic;
+			  LEDs3 : out STD_LOgic;
+			  Co2 : inout STD_LOgic;
+			  CLKIN : in std_logic;
+			  LED1 : inout std_logic_vector(6 downto 0);
+			  LED2 : inout std_logic_vector(6 downto 0);
+           AN2 : inout std_logic;
+           AN1 : inout std_logic;
+			  AN3 : inout std_logic;
+			  AN4 : inout std_logic;
+			  LED: out std_logic_vector(6 downto 0);
+			  S: INOUT STD_LOGIC_VECTOR(3 downto 0));
+end Practica2;
+
+architecture Behavioral of Practica2 is
+ signal Co0, Co1: std_logic;
+ signal CTR : STD_LOGIC_VECTOR(12 downto 0);
+begin
+	LEDs0 <= '0';
+	LEDs1 <= '0';
+	LEDs2 <= '0';
+	LEDs3 <= '0';
+	
+	S0 <= A0 xor B0;
+	Co0 <= A0 and B0;
+	Ci1 <= Co0;
+	
+	S1 <= A1 xor B1 xor Ci1;
+	Co1 <= (A1 and B1) or (Ci1 and (A1 or B1));
+	Ci2 <= Co1;
+
+	S2 <= A2 xor B2 xor Ci2;
+	Co2 <= (A2 and B2) or (Ci2 and (A2 or B2));
+	
+	S <= (Co2,S2,S1,S0);
+	
+	
+	process (S)
+	begin
+		case S is
+			when "0000" =>
+			LED1 <= "0000001";
+			when "0001" =>
+			LED1 <= "1001111";
+			when "0010" => 
+			LED1 <= "0010010";
+			when "0011" =>
+			LED1 <= "0000110";
+			when "0100" =>
+			LED1 <= "1001100";			
+			when "0101" =>
+			LED1 <= "0100100";
+			when "0110" => 
+			LED1 <= "0100000";
+			when "0111" =>
+			LED1 <= "0001111";
+			when "1000" => 
+			LED1 <= "0000000";
+			when "1001" =>
+			LED1 <= "0001100";
+--Cuenta para el 15
+			when "1010" =>
+			LED1 <= "0000001";
+			when "1011" =>
+			LED1 <= "1001111";
+			when "1100" =>
+			LED1 <= "0010010";
+			when "1101"=>
+			LED1 <= "0000110";
+			when "1110" => 
+			LED1 <= "1001100";
+			when "1111"=>
+			LED1 <= "0100100";
+			when others => null;
+		end case;
+	end process;
+		
+	process (S)
+		begin
+		case S is
+			when "0000" =>
+			LED2 <= "0000001";
+			when "0001" =>
+			LED2 <= "0000001";
+			when "0010" => 
+			LED2 <= "0000001";
+			when "0011" =>
+			LED2 <= "0000001";
+			when "0100" =>
+			LED2 <= "0000001";			
+			when "0101" =>
+			LED2 <= "0000001";
+			when "0110" => 
+			LED2 <= "0000001";
+			when "0111" =>
+			LED2 <= "0000001";
+			when "1000" => 
+			LED2 <= "0000001";
+			when "1001" =>
+			LED2 <= "0000001";
+--Cuenta para el 15
+			when "1010" =>
+			LED2 <= "1001111";
+			when "1011" =>
+			LED2 <= "1001111";
+			when "1100" =>
+			LED2 <= "1001111";
+			when "1101"=>
+			LED2 <= "1001111";
+			when "1110" => 
+			LED2 <= "1001111";
+			when "1111"=>
+			LED2 <= "1001111";
+			when others => null;
+		end case;
+		end process;	
+  Process (CLKIN)
+  begin
+    if CLKIN'event and CLKIN = '1' then
+      if (CTR="0000000000000") then
+        if (AN2 = '0') then 
+          AN2 <= '1';	 
+          LED <= LED2;            -- Letra H se forma en AN1/E13
+          AN1 <= '0';
+			 AN3 <= '1';
+			 AN4 <= '1';
+        elsif (AN1= '0') then 
+          AN1 <= '1';
+          LED <= LED1;             -- Letra O se forma en AN2/F14
+          AN2 <= '0';
+			 AN3 <= '1';
+			 AN4 <= '1';
+        end if;
+      end if;
+      CTR<=CTR+"0000000000001";
+      if (CTR > "1000000000000") then   -- counter reaches 2^13
+        CTR<="0000000000000";
+      end if;
+    end if; -- CLK'event and CLK = '1' 
+  End Process;
+
+end Behavioral;
+
+NET "A2" LOC = "K13" ;
+NET "A1" LOC = "K14" ;
+NET "A0" LOC = "J13" ;
+NET "B2" LOC = "H14" ;
+NET "B1" LOC = "G12" ;
+NET "B0" LOC = "F12" ;
+NET "S2" LOC = "N14" ;
+NET "S1" LOC = "L12" ;
+NET "S0" LOC = "P14" ;
+NET "Co2" LOC = "P13";
+NET "LEDs0" LOC ="K12";
+NET "LEDs1" LOC ="N12";
+NET "LEDs2" LOC ="P12";
+NET "LEDs3" LOC ="P11";
+NET "AN1" LOC = "G14" ;
+NET "AN2" LOC = "D14" ;
+NET "AN2" LOC = "D14" ;
+NET "AN3" LOC = "F14" ;
+NET "AN4" LOC = "E13" ;
+NET "CLKIN" LOC = "T9" ;
+NET "LED<0>" LOC = "N16" ;
+NET "LED<1>" LOC = "F13" ;
+NET "LED<2>" LOC = "R16" ;
+NET "LED<3>" LOC = "P15" ;
+NET "LED<4>" LOC = "N15" ;
+NET "LED<5>" LOC = "G13" ;
+NET "LED<6>" LOC = "E14" ;
