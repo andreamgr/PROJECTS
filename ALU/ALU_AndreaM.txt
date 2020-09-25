@@ -1,0 +1,42 @@
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use ieee.std_logic_unsigned.all;
+use IEEE.std_logic_arith.all; 
+
+
+entity ALU is
+	port(reset: IN STD_LOGIC;
+		  A, B: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+			s: in STD_LOGIC_VECTOR(3 DOWNTO 0);
+			resul: OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+			);
+end ALU;
+
+architecture Behavioral of ALU is
+signal ctr : std_logic_vector(31 downto 0);
+begin
+	process(s, reset, A, B)
+	begin
+		if reset = '1' then 
+			resul <= ctr;
+		else
+			case s is
+				when "0000" => resul <= A and B;
+				when "0001" => resul <= A or B;
+				when "0010" => resul <= A + B;
+				when "0110" => resul <= A - B;
+				when "0111" => 
+					if A > B then 
+						resul <= ctr + 1;
+					else 
+						resul <= ctr;
+					end if;
+				when "1100" => resul <= A nor B;
+				when others => null;
+			end case;
+		end if;
+	end process;
+
+end Behavioral;
+
